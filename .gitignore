@@ -1,0 +1,15 @@
+﻿# VS Code
+.vscode/
+
+# TemporÃ¤ra filer
+*.tmp
+*.log
+
+# MiljÃ¶variabler och hemligheter
+.env
+.env.*
+!.env.example
+
+# OS
+Thumbs.db
+.DS_Store

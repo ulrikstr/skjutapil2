@@ -1,9 +1,7 @@
-# Mitt spel
+﻿# SkjutaPil
 
-En enkel grund för ett webbläsarspel med HTML, CSS och vanlig JavaScript.
-Projektet har inga externa beroenden eller byggsteg.
+Privat projekt.
 
-## Kom igång
+## Beskrivning
 
-Öppna `index.html` i en modern webbläsare. Spelets canvas finns i `index.html`,
-utseendet i `style.css` och spelkoden i `game.js`.
+LÃ¤gg till projektbeskrivning hÃ¤r.

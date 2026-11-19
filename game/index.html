@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pilbågsspel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="game" aria-label="Pilbågsspel">
+    <canvas id="canvas"></canvas>
+
+    <section class="hud">
+      <div><span>POÄNG</span><strong id="score">0</strong></div>
+      <div><span>TRÄFFAR</span><strong id="hits">0</strong></div>
+      <div><span>PILAR KVAR</span><strong id="arrowsLeft">5</strong></div>
+    </section>
+
+    <section class="highscores" aria-label="Highscorelista">
+      <h2>HIGHSCORE</h2>
+      <ol id="highscoreList"></ol>
+    </section>
+
+    <div id="crosshair"></div>
+
+    <div id="startScreen" class="overlay">
+      <div class="panel">
+        <p class="eyebrow">BÅGSKYTTE</p>
+        <h1>Träffa tavlan</h1>
+        <p>Flytta musen för att sikta.<br />Håll ned vänster musknapp för att spänna bågen.</p>
+        <label class="target-option">
+          <input id="movingTargetCheckbox" type="checkbox" />
+          Rörliga fåglar
+        </label>
+        <button id="startButton">Börja skjuta</button>
+      </div>
+    </div>
+
+    <div id="shotInfo"><span id="shotValue">0</span><small>kraft</small></div>
+
+    <div id="endScreen" class="overlay hidden">
+      <div class="panel">
+        <p class="eyebrow">OMGÅNG KLAR</p>
+        <h1 id="finalScore">0 poäng</h1>
+        <p id="finalHits">0 träffar</p>
+        <label class="target-option">
+          <input id="endMovingTargetCheckbox" type="checkbox" />
+          Rörliga fåglar
+        </label>
+        <button id="restartButton">Kör en ny runda</button>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="game.clean.js"></script>
+</body>
+</html>
