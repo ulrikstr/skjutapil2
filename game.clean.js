@@ -124,7 +124,6 @@ for (let i = 0; i < 5; i++) makeBird(i);
 
 let started = false, aiming = false, gameEnded = false;
 let drawStart = 0, power = 0, score = 0, hits = 0, arrowsLeft = 5;
-let finishTimer = null;
 let birdsEnabled = false, birdTime = 0, targetTime = 0;
 let arrows = [], markers = [];
 const aimPoint = new THREE.Vector3(0, 1.8, -35);
@@ -305,11 +304,6 @@ window.addEventListener('mouseup', e => {
   arrowsEl.textContent = arrowsLeft;
   power = 0;
   shotValue.textContent = 0;
-
-  if (arrowsLeft === 0) {
-    clearTimeout(finishTimer);
-    finishTimer = setTimeout(finishGame, 300);
-  }
 });
 
 startButton.addEventListener('click', () => {
@@ -320,8 +314,6 @@ startButton.addEventListener('click', () => {
 });
 
 restartButton.addEventListener('click', () => {
-  clearTimeout(finishTimer);
-  finishTimer = null;
   birdsEnabled = endMovingCheckbox.checked;
   movingCheckbox.checked = birdsEnabled;
   endMovingCheckbox.checked = birdsEnabled;
