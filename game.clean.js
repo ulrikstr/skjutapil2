@@ -15,6 +15,7 @@ const shotValue = document.getElementById('shotValue');
 const crosshair = document.getElementById('crosshair');
 const movingCheckbox = document.getElementById('movingTargetCheckbox');
 const endMovingCheckbox = document.getElementById('endMovingTargetCheckbox');
+const highscoreList = document.getElementById('highscoreList');
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x7f9a86);
@@ -123,6 +124,7 @@ for (let i = 0; i < 5; i++) makeBird(i);
 
 let started = false, aiming = false, gameEnded = false;
 let drawStart = 0, power = 0, score = 0, hits = 0, arrowsLeft = 5;
+let finishTimer = null;
 let birdsEnabled = false, birdTime = 0, targetTime = 0;
 let arrows = [], markers = [];
 const aimPoint = new THREE.Vector3(0, 1.8, -35);
@@ -256,6 +258,18 @@ function updateArrows(dt) {
   });
 }
 
+function finishGame() {
+  if (gameEnded) return;
+
+  gameEnded = true;
+  const highscores = saveHighscore(score, hits);
+  renderHighscores(highscores);
+  finalScore.textContent = `${score} poäng`;
+  finalHits.textContent = `${hits} träffar`;
+  endScreen.classList.remove('hidden');
+  document.body.classList.add('menu');
+}
+
 let last = performance.now();
 function animate(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
@@ -267,12 +281,8 @@ function animate(now) {
   if (birdsEnabled) target.position.set(0, 1.8, -35);
   updateBirds(dt);
   updateArrows(dt);
-  if (arrowsLeft === 0 && !gameEnded && arrows.every(a => a.stuck)) {
-    gameEnded = true;
-    finalScore.textContent = `${score} poäng`;
-    finalHits.textContent = `${hits} träffar`;
-    endScreen.classList.remove('hidden');
-    document.body.classList.add('menu');
+  if (arrowsLeft === 0 && !aiming && !gameEnded && arrows.every(a => a.stuck)) {
+    finishGame();
   }
   camera.lookAt(0, 1.8, -35);
   renderer.render(scene, camera);
@@ -286,7 +296,21 @@ window.addEventListener('resize', () => {
 });
 window.addEventListener('mousemove', e => { updateAim(e); crosshair.style.left = e.clientX + 'px'; crosshair.style.top = e.clientY + 'px'; crosshair.style.opacity = started ? 1 : 0; });
 window.addEventListener('mousedown', e => { if (started && e.button === 0 && !aiming && arrowsLeft > 0) { aiming = true; drawStart = performance.now(); shotInfo.classList.add('visible'); } });
-window.addEventListener('mouseup', e => { if (!aiming || e.button !== 0) return; aiming = false; shotInfo.classList.remove('visible'); shoot(); arrowsLeft--; arrowsEl.textContent = arrowsLeft; power = 0; shotValue.textContent = 0; });
+window.addEventListener('mouseup', e => {
+  if (!aiming || e.button !== 0) return;
+  aiming = false;
+  shotInfo.classList.remove('visible');
+  shoot();
+  arrowsLeft--;
+  arrowsEl.textContent = arrowsLeft;
+  power = 0;
+  shotValue.textContent = 0;
+
+  if (arrowsLeft === 0) {
+    clearTimeout(finishTimer);
+    finishTimer = setTimeout(finishGame, 300);
+  }
+});
 
 startButton.addEventListener('click', () => {
   birdsEnabled = movingCheckbox.checked;
@@ -296,6 +320,8 @@ startButton.addEventListener('click', () => {
 });
 
 restartButton.addEventListener('click', () => {
+  clearTimeout(finishTimer);
+  finishTimer = null;
   birdsEnabled = endMovingCheckbox.checked;
   movingCheckbox.checked = birdsEnabled;
   endMovingCheckbox.checked = birdsEnabled;
@@ -315,6 +341,62 @@ restartButton.addEventListener('click', () => {
 movingCheckbox.addEventListener('change', e => { birdsEnabled = e.target.checked; endMovingCheckbox.checked = birdsEnabled; });
 endMovingCheckbox.addEventListener('change', e => { birdsEnabled = e.target.checked; movingCheckbox.checked = birdsEnabled; });
 
+const HIGHSCORE_KEY = 'skjutapil2_highscores_v1';
+const HIGHSCORE_LIMIT = 5;
+
+function loadHighscores() {
+  try {
+    const raw = localStorage.getItem(HIGHSCORE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter(item => item && Number.isFinite(item.score) && Number.isFinite(item.hits))
+      .sort((a, b) => b.score - a.score || b.hits - a.hits)
+      .slice(0, HIGHSCORE_LIMIT);
+  } catch {
+    return [];
+  }
+}
+
+function saveHighscore(finalScore, finalHits) {
+  const highscores = loadHighscores();
+  highscores.push({
+    score: finalScore,
+    hits: finalHits,
+    date: new Date().toISOString()
+  });
+
+  highscores.sort((a, b) => b.score - a.score || b.hits - a.hits);
+  const trimmed = highscores.slice(0, HIGHSCORE_LIMIT);
+
+  try {
+    localStorage.setItem(HIGHSCORE_KEY, JSON.stringify(trimmed));
+  } catch {
+    // Spelet fungerar även om webbläsaren inte tillåter lokal lagring.
+  }
+
+  return trimmed;
+}
+
+function renderHighscores(list = loadHighscores()) {
+  highscoreList.innerHTML = '';
+
+  if (!list.length) {
+    const li = document.createElement('li');
+    li.textContent = 'Ingen highscore ännu';
+    highscoreList.appendChild(li);
+    return;
+  }
+
+  list.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = `${item.score} p (${item.hits} träffar)`;
+    highscoreList.appendChild(li);
+  });
+}
+
 document.body.classList.add('menu');
+renderHighscores();
 renderer.render(scene, camera);
 requestAnimationFrame(animate);
